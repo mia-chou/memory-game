@@ -1,26 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import SingleCard from './SingleCard';
 
 const cardImages = [
-  { src: "/img/helmet-1.png" },
-  { src: "/img/potion-1.png" },
-  { src: "/img/ring-1.png" },
-  { src: "/img/scroll-1.png" },
-  { src: "/img/shield-1.png" },
-  { src: "/img/sword-1.png" },
+  { src: "/img/helmet-1.png", matched: false },
+  { src: "/img/potion-1.png" ,matched: false},
+  { src: "/img/ring-1.png", matched: false},
+  { src: "/img/scroll-1.png", matched: false},
+  { src: "/img/shield-1.png" ,matched: false},
+  { src: "/img/sword-1.png",matched: false },
 ];
 
 function App() {
   const [cards, setCards] = useState([]);
   const [turns, setTurns] = useState(0);
+  const [choiceOne, setChoiceOne] = useState(null);
+  const [choiceTwo, setChoiceTwo] = useState(null);
 
   // Shuffle cards
   const shuffleCards = () => {
     const shuffleCards = [...cardImages, ...cardImages]
       .sort(() => Math.random() - 0.5)
-      .map((card, index) => ({ ...card, id: index + 1 }));
+      .map((card, index) => ({ ...card, id: `${card.src}-${index}` }));
     setCards(shuffleCards);
     setTurns(0);
+  };
+
+  // handle a choice
+  const handleChoice = (card) => {
+    choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
+  };
+
+  // compare 2 selected cards
+  useEffect(() => {
+    if (choiceOne && choiceTwo) {
+      if (choiceOne.src === choiceTwo.src) {
+        setCards(prevCards => 
+          prevCards.map(card => 
+            card.src === choiceOne.src ? { ...card, matched: true } : card
+          )
+        );
+        resetTurn();
+      } else {
+        setTimeout(resetTurn, 1000); // Delay before flipping unmatched cards back
+      }
+    }
+  }, [choiceOne, choiceTwo]);
+
+  // reset choices & increase turn
+  const resetTurn = () => {
+    setChoiceOne(null);
+    setChoiceTwo(null);
+    setTurns(prevTurns => prevTurns + 1);
   };
 
   return (
@@ -29,14 +60,15 @@ function App() {
       <button onClick={shuffleCards}>New Game</button>
       <div className="card-grid">
         {cards.map(card => (
-          <div className="card" key={card.id}>
-            <div>
-              <img className="front" src={card.src} alt="card-front" />
-              <img className="back" src="/img/cover.png" alt="card-back" />
-            </div>
-          </div>
+          <SingleCard 
+            key={card.id} 
+            card={card} 
+            handleChoice={handleChoice} 
+            flipped={card === choiceOne || card === choiceTwo || card.matched} // Fixed flipped condition
+          />
         ))}
       </div>
+      <p>Turns: {turns}</p> {/* Added a turns counter */}
     </div>
   );
 }
