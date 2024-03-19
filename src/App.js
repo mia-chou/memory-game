@@ -23,7 +23,10 @@ function App() {
     const shuffleCards = [...cardImages, ...cardImages]
       .sort(() => Math.random() - 0.5)
       .map((card, index) => ({ ...card, id: `${card.src}-${index}` }));
-    setCards(shuffleCards);
+    
+    setChoiceOne(null)
+    setChoiceTwo(null)
+      setCards(shuffleCards);
     setTurns(0);
   };
 
@@ -56,6 +59,15 @@ function App() {
     setTurns(prevTurns => prevTurns + 1);
     setDisabled(false)
   };
+
+  // star a new game automagically 
+
+  useEffect(()=>{
+
+shuffleCards()
+
+
+  }, [])
 
   return (
     <div className="App">
